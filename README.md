@@ -5,6 +5,37 @@
 官方 2.99.0.0 为遵守相关法律法规关闭了 MC 下载功能（原版安装、整合包安装等）。
 本工具直接对**官方发布的 exe** 做二进制 IL 手术，把被编译期裁剪掉的下载入口按上一无限制版本（2.14.0.0）的源码语义原样接回。
 
+## 下载
+
+[![download fixpcl.cmd](https://img.shields.io/badge/%E2%AC%87_%E4%B8%8B%E8%BD%BD-fixpcl.cmd-2EA44F?style=for-the-badge&logo=github)](https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd)
+
+**主源（GitHub Release，点击即下载）**：<https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd>
+
+**加速镜像**（代理 GitHub Release，国内可达性更好）：
+
+| 镜像 | 下载地址 |
+|---|---|
+| ghfast.top | <https://ghfast.top/https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd> |
+| gh-proxy.com | <https://gh-proxy.com/https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd> |
+| 备用（仓库 raw） | <https://github.com/ImUpXuu/fixpcl/raw/main/fixpcl.cmd> |
+
+**文件校验**（v1.0.0；任何镜像下载后请核对，不匹配说明该镜像缓存异常，请换主源）：
+
+```
+SHA-256: 8e1bde27fdacfaff8fca801c1e9b2595b304d480198e85b9982fd1e9312c04fa
+大小:    1,602,042 字节
+```
+
+PowerShell 一行下载并校验：
+
+```powershell
+irm https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd -OutFile fixpcl.cmd
+(Get-FileHash fixpcl.cmd -Algorithm SHA256).Hash   # 应为 8E1BDE27FDACFAFF...
+```
+
+> 无论从哪个镜像获取工具，其修补产物（`.patched.exe`）的 SHA-256 恒为
+> `2f8bd4f49615d4377e3b00d7dd706239b360943853058737a50edf9d101483ae`，可作为最终校验。
+
 ## 快速开始
 
 1. 把官方 2.99.0.0 的 `Plain Craft Launcher 2.exe` 和本工具放在**同一文件夹**；
