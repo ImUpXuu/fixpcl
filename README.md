@@ -1,0 +1,73 @@
+# fixpcl
+
+> PCL (Plain Craft Launcher 2) v2.99.0.0 MC 下载功能一键修复工具 —— 单文件、双击即用、无需安装任何依赖。
+
+官方 2.99.0.0 为遵守相关法律法规关闭了 MC 下载功能（原版安装、整合包安装等）。
+本工具直接对**官方发布的 exe** 做二进制 IL 手术，把被编译期裁剪掉的下载入口按上一无限制版本（2.14.0.0）的源码语义原样接回。
+
+## 快速开始
+
+1. 把官方 2.99.0.0 的 `Plain Craft Launcher 2.exe` 和本工具放在**同一文件夹**；
+2. 双击 `fixpcl.cmd`，等待约 10 秒；
+3. 同目录生成 `Plain Craft Launcher 2.patched.exe`（原文件不会被修改）；
+4. 用它替换你 PCL 目录里的 exe（替换前请自行备份）。
+
+文件夹里没有官方 exe？工具会自动从 GitHub / jsdelivr 下载官方 2.99.0.0 再修补。
+
+## 恢复了什么
+
+| # | 功能 | 位置 |
+|---|------|------|
+| P3 | 原版下载页：Mojang 官方版本列表加载与安装 | `PageDownloadInstall.LoaderInit` |
+| P2 | 整合包文件安装：CurseForge / HMCL / MMC / MCBBS / Modrinth / 带启动器压缩包 / 未识别压缩包 共 7 条安装链路 | `ModModpack.ModpackInstall(File,…)` |
+| P1 | "安装整合包"入口：文件选择对话框 + 后台安装 | `ModModpack.ModpackInstall()` |
+| P5 | 版本修改页的 MC 版本卡片显示 | `PageDownloadModify` |
+| P6 | 资源详情页整合包"点击安装"按钮 | `PageDownloadResourceDetail` |
+
+下载的游戏文件来自 Mojang 官方 CDN，与 PCL 原有行为一致。
+
+## 工作原理（一句话版）
+
+限制的实现方式是 `Public Const RestrictMcDownload As Boolean = True` 触发的**编译期常量折叠**——守卫分支被消除、下游代码被裁剪，二进制里没有开关可翻。而 7 个安装链路方法、版本清单加载器、闭包类等"器官"仍完整幸存，本工具用 dnlib 把 5 个"总闸"的接线按 2.14 源码语义重新缝回去。详见 [docs/how-it-works.md](docs/how-it-works.md)。
+
+## 环境要求
+
+- Windows 10 / 11（自带 Windows PowerShell 5.1，无需安装任何东西）
+- 官方 2.99.0.0 正式版 exe（其他版本会被版本守卫拒绝）
+
+## 内置安全机制
+
+- **版本锁**：仅接受 FileVersion = 2.99.0.0，否则拒绝执行；
+- **只读原文件**：补丁输出为独立的 `*.patched.exe`；
+- **写盘前校验**：全模块扫描悬空引用（分支目标 / 异常处理边界），任何异常立即中止；
+- **写盘后复检**：重新加载产物，逐项验证 P1/P2/P3/P5/P6 全部生效，失败即删；
+- **确定性输出**：同一官方 exe 的多次修复产物 SHA-256 完全一致。
+
+## 文档
+
+- [docs/usage.md](docs/usage.md) —— 详细用法、环境变量、常见问题与故障排查
+- [docs/how-it-works.md](docs/how-it-works.md) —— 补丁原理：常量折叠、幸存代码、五处 IL 手术细节
+- [docs/analysis-2.99.0.0.md](docs/analysis-2.99.0.0.md) —— 2.99.0.0 关闭下载的分析过程与证据
+- [docs/verification.md](docs/verification.md) —— 验证方法：反编译回读、哈希确定性、边界测试
+
+## 局限
+
+- 与 2.99.0.0 二进制结构强绑定。官方发布新版本后本工具会**拒绝执行**（版本守卫与结构定位双重保险），需要重新分析适配；
+- 不会恢复 PCL 开源仓库中本就不存在的私有功能（自动更新逻辑、赞助主题解锁、正版登录密钥等仍使用官方二进制内原有实现，行为与原版一致）。
+
+## 法律与使用声明
+
+- 本工具与 PCL 作者（龙腾猫跃）无关，仅为技术研究与个人互操作用途；
+- **仅限个人使用**。请勿分发补丁后的 exe——这既不符合 PCL 的许可条款，也处于合规灰色地带；
+- 修复后的程序仍保留官方的遥测与更新检查（行为与原版无异）。建议在 PCL 设置中**关闭自动更新**，否则补丁版会被官方受限版覆盖；
+- 请通过官方渠道下载原版 PCL，并**购买正版 Minecraft**。
+
+## 致谢
+
+- [PCL / Plain Craft Launcher 2](https://github.com/Meloong-Git/PCL) 及其作者龙腾猫跃；
+- [dnlib](https://github.com/0xd4d/dnlib)（MIT License，已以 Base64 形式内嵌于单文件工具中）；
+- [ILSpy / ilspycmd](https://github.com/icsharpcode/ILSpy)（分析验证阶段使用，不随工具分发）。
+
+## 许可
+
+本仓库代码按 PCL《存储库合理使用指南》的精神发布：你可以学习和参考，但基于 PCL 的衍生作品需遵循原作者的许可要求。详见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。

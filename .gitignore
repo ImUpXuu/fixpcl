@@ -1,0 +1,37 @@
+# --- private / analysis artifacts (never commit) ---
+/analysis-exe-strings.txt
+/analysis-source-types.txt
+/decompiled-299/
+/decompiled-patched/
+/exe-analysis/
+/patch-work/
+/tools/
+/release-299/
+
+# cloned upstream repos (not part of this project)
+/PCL-repo/
+/MeloongCore-check/
+
+# scratch / test output
+/test-single*/
+/test-universal/
+/test-*/
+/一键修复/
+
+# binaries & archives of any kind
+*.exe
+*.patched.exe
+*.orig
+*.zip
+*.nupkg
+*.pdb
+
+# PCL runtime folders
+/PCL/
+
+# editor / OS junk
+Thumbs.db
+Desktop.ini
+.vs/
+.idea/
+*.log
