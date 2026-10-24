@@ -36,7 +36,7 @@ If RestrictMcDownload Then Throw New Exception("为遵守相关法律法规…�
 
 ## 3. 手术工具：dnlib 读写 .NET 元数据与 IL
 
-.NET 程序集 = 元数据表（类型 / 方法 / 签名 / 字符串堆）+ 每个方法的 IL 指令体。dnlib 将其解析为对象模型，可以按名定位方法、增删改指令、导入跨程序集引用、重新序列化写盘（token / RVA 自动重排）。五处补丁用了四种手法，按复杂度递进：
+.NET 程序集 = 元数据表（类型 / 方法 / 签名 / 字符串堆）+ 每个方法的 IL 指令体。dnlib 将其解析为对象模型，可以按名定位方法、增删改指令、导入跨程序集引用、重新序列化写盘（token / RVA 自动重排）。六处补丁用了五种手法，按复杂度递进：
 
 ### P5 — 单指令替换
 
@@ -60,6 +60,19 @@ If RestrictMcDownload Then Throw New Exception("为遵守相关法律法规…�
 ### P6 — 分支重建
 
 资源列表循环里插入 `TargetResourceType == ModPack(=2)` 判断：THEN 分支用两组 `ldarg.0; ldftn; newobj` 构造 Install / Save 双委托调用三参 `ToListItem`，ELSE 原样保留。
+
+### P7 — 方法体桩化（禁用自更新）
+
+分析发现官方 exe 的**所有更新路径**最终都汇入 `ModSecret.UpdateStart(bool Silent, …)` 这一个执行器：
+
+- 服务器经 ServerConfig 下发的 `slientupdate` 命令（静默自更新，**最危险**——会在无提示的情况下把补丁版替换成官方受限版）；
+- 服务器下发的 `update` 命令（弹窗确认后更新）；
+- 设置页"检查更新"按钮（`UpdateCheckByButton`）。
+
+补丁把 `UpdateStart` 的方法体整体替换为单条 `ret` 指令（空方法）。这是全部补丁中最简单的一处，却覆盖了每一个更新向量；同时：
+
+- 整合包打包用的 `DownloadLatestPCL`（同样从更新源下载 Latest.exe）是独立方法，**不受影响**；
+- 公告、下载镜像（`ServerConfig["Link"]`）等联网配置功能照常工作。
 
 ## 4. 单文件形态
 

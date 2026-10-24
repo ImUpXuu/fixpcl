@@ -27,10 +27,11 @@
 | P1 | `ModpackInstall()` 含 `Dialogs::SelectFile` 与 `RunInThread` 调用 |
 | P5 | `PageDownloadModify` 中不再存在 `get_CardMinecraft → ldc.i4.2 → set_Visibility` 序列 |
 | P6 | `InitializeStackResourceVersions` 中存在 `ldftn Install_Click` |
+| P7 | `ModSecret.UpdateStart` 方法体恰为 1 条 `ret` 指令 |
 
 ## 4. 反编译回读（开发期最强验证）
 
-用 ILSpy 对补丁产物整体反编译，人工比对五处代码与 2.14 等价性。反编译器本质上是最严格的 IL 语义阅读器——它读不顺的 IL 大概率有问题。实测五处全部还原出等价高级代码（例如 P6 还原出 `if ((int)TargetResourceType == 2) { … ToListItem(Install_Click, Save_Click, …) }`，与 2.14 逐字一致）。
+用 ILSpy 对补丁产物整体反编译，人工比对各处代码与 2.14 等价性。反编译器本质上是最严格的 IL 语义阅读器——它读不顺的 IL 大概率有问题。实测全部还原出等价高级代码（例如 P6 还原出 `if ((int)TargetResourceType == 2) { … ToListItem(Install_Click, Save_Click, …) }`，与 2.14 逐字一致；P7 还原出空方法 `void UpdateStart(…) { }`）。
 
 ## 5. 冒烟测试
 
@@ -41,8 +42,10 @@
 同一官方 exe 的多次修复（含单文件工具与开发期脚本两种路径）产物 **SHA-256 完全一致**：
 
 ```
-f02b495e45c75ce2127cb2d121986a4dcc8d457550f0863528ba1bc645b10c3c
+2f8bd4f49615d4377e3b00d7dd706239b360943853058737a50edf9d101483ae
 ```
+
+（P1–P6 时代的旧产物为 `f02b495e45c75ce2127cb2d121986a4dcc8d457550f0863528ba1bc645b10c3c`；加入 P7 后哈希随之更新。）
 
 这意味着工具的输出就是那份被反编译验证 + 冒烟测试过的二进制，逐字节相同。
 

@@ -415,6 +415,21 @@ $idx = $blockStart
 foreach ($x in $N) { $ins.Insert($idx, $x); $idx++ }
 Write-Ok ('P6  资源详情页安装分支已恢复 (' + $N.Count + ' 条指令)')
 
+# ============================ P7: 禁用自更新 ==================================
+# 所有更新路径（服务器推送的 slientupdate 静默更新 / update 弹窗更新 / 手动按钮）
+# 最终都调用 ModSecret.UpdateStart 下载并替换本体。将其方法体替换为单条 ret，
+# 自更新永久失效，防止补丁版被官方受限版覆盖；整合包打包用的 DownloadLatestPCL
+# 是独立方法，不受影响。
+$modSecretT = GetTypeDef 'PCL.ModSecret'
+$us = @($modSecretT.Methods | Where-Object { $_.Name -eq 'UpdateStart' -and $_.Parameters.Count -eq 2 })
+if ($us.Count -ne 1) { throw 'P7 失败：UpdateStart 缺失' }
+$us = $us[0]
+if ($us.ReturnType.FullName -ne 'System.Void') { throw 'P7 失败：UpdateStart 签名异常' }
+$newBody = New-Object dnlib.DotNet.Emit.CilBody
+[void]$newBody.Instructions.Add([dnlib.DotNet.Emit.Instruction]::Create($Op::Ret))
+$us.Body = $newBody
+Write-Ok 'P7  自更新执行器 UpdateStart 已禁用（服务器推送与手动更新均不再下载替换）'
+
 # ---- 5. 写盘前校验：无悬空引用 ---------------------------------------------
 $bad = 0
 foreach ($t in $module.Types) {
@@ -499,7 +514,9 @@ foreach ($x in $v6m.Body.Instructions) {
     if ($x.OpCode.Name -eq 'ldftn' -and $x.Operand -and $x.Operand.ToString() -like '*Install_Click*') { $v6ok = $true }
 }
 if (-not $v6ok) { throw '复检失败：P6 未生效' }
-Write-Ok '写盘后复检通过：P1/P2/P3/P5/P6 全部生效'
+$v7m = @((Chk-Type 'PCL.ModSecret').Methods | Where-Object { $_.Name -eq 'UpdateStart' -and $_.Parameters.Count -eq 2 })[0]
+if (-not ($v7m.Body.Instructions.Count -eq 1 -and $v7m.Body.Instructions[0].OpCode.Name -eq 'ret')) { throw '复检失败：P7 未生效' }
+Write-Ok '写盘后复检通过：P1/P2/P3/P5/P6/P7 全部生效'
 
 # ---- 8. 可选冒烟测试 ---------------------------------------------------------
 if ($env:PCL_SMOKE -eq '1') {
@@ -514,4 +531,4 @@ Remove-Item $workDir -Recurse -Force -ErrorAction SilentlyContinue
 Write-Host ''
 Write-Ok '全部完成。'
 Write-Host ('    补丁文件: ' + $outExe)
-Write-Host '    注意: 1) 仅限个人使用，请勿分发;  2) 建议在 PCL 设置中关闭自动更新，以免补丁版被官方版覆盖。'
+Write-Host '    注意: 1) 仅限个人使用，请勿分发;  2) 已自动禁用自更新（P7），补丁版不会被官方版覆盖。'
