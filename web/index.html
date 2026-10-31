@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fixpcl — 让你的 PCL 恢复下载功能！</title>
+<meta name="description" content="PCL 2.99.0.0 关闭了 MC 下载功能。fixpcl 单文件工具一键恢复：原版安装、整合包安装、版本修改全部回来。双击即用，无需安装。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230284c7'/%3E%3Ctext x='16' y='23' font-size='19' font-weight='bold' font-family='monospace' fill='white' text-anchor='middle'%3Ef%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #101828;
+    --blue: #0284c7;
+    --blue-deep: #075985;
+    --paper: #f4f8fc;
+    --card: #ffffff;
+    --gray: #5b6b7c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      repeating-linear-gradient(0deg, transparent 0 31px, rgba(2,132,199,.055) 31px 32px),
+      repeating-linear-gradient(90deg, transparent 0 31px, rgba(2,132,199,.055) 31px 32px),
+      var(--paper);
+    min-height: 100vh;
+    padding: 44px 20px 36px;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+
+  .badge {
+    font-size: 13.5px; font-weight: 600;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    border-radius: 999px;
+    padding: 5px 18px;
+    margin-bottom: 30px;
+  }
+  .badge b { color: var(--blue); }
+
+  h1 {
+    font-size: clamp(30px, 5.4vw, 54px);
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 1px;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  h1 .mark {
+    color: var(--blue);
+    background: linear-gradient(transparent 62%, rgba(2,132,199,.22) 62%);
+    padding: 0 4px;
+  }
+  .sub {
+    text-align: center;
+    color: var(--gray);
+    font-size: 16.5px;
+    max-width: 620px;
+    margin: 10px 0 34px;
+  }
+  .sub b { color: var(--ink); }
+
+  .buttons { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 18px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    text-decoration: none;
+    font-size: 17px; font-weight: 800;
+    padding: 14px 30px;
+    border-radius: 12px;
+    border: 2.5px solid var(--ink);
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .btn-main {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 5px 5px 0 var(--ink);
+    font-size: 18.5px;
+    padding: 15px 34px;
+  }
+  .btn-alt { background: var(--card); color: var(--blue-deep); box-shadow: 4px 4px 0 var(--ink); }
+  .btn:hover { transform: translate(-2px, -2px); }
+  .btn-main:hover { box-shadow: 7px 7px 0 var(--ink); }
+  .btn-alt:hover { box-shadow: 6px 6px 0 var(--ink); }
+  .btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink) !important; }
+
+  .gh {
+    color: var(--gray); font-size: 14.5px; font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px dashed var(--gray);
+    padding-bottom: 2px;
+    margin-bottom: 46px;
+    transition: color .12s;
+  }
+  .gh:hover { color: var(--blue-deep); border-color: var(--blue-deep); }
+
+  .steps { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; width: 100%; margin-bottom: 34px; }
+  .step {
+    flex: 1 1 230px; max-width: 280px;
+    background: var(--card);
+    border: 2.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 5px 5px 0 rgba(2,132,199,.9);
+    padding: 20px 22px 18px;
+  }
+  .step .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    background: var(--blue); color: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    font-weight: 900; font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .step h3 { font-size: 16px; margin-bottom: 4px; }
+  .step p { font-size: 13.5px; color: var(--gray); }
+
+  .hash {
+    width: 100%;
+    background: var(--card);
+    border: 2.5px dashed var(--blue);
+    border-radius: 14px;
+    padding: 15px 22px;
+    font-size: 13.5px;
+    color: var(--gray);
+    margin-bottom: 30px;
+  }
+  .hash code {
+    display: block;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    color: var(--blue-deep);
+    word-break: break-all;
+    margin-top: 5px;
+    cursor: pointer;
+  }
+  .hash code:hover { text-decoration: underline; }
+
+  footer {
+    color: #8494a5;
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 660px;
+  }
+  footer a { color: var(--blue-deep); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="badge">fixpcl <b>v1.0.0</b> · 适用于官方 PCL 2.99.0.0</div>
+
+  <h1>让你的 PCL <span class="mark">恢复下载功能</span>！</h1>
+  <p class="sub">官方 2.99.0.0 关闭了 MC 下载。fixpcl 一个文件把它接回来——<b>原版安装、整合包安装、版本修改</b>全部照旧。双击即用，自动禁用自更新防止补丁被覆盖。</p>
+
+  <div class="buttons">
+    <a class="btn btn-main" href="https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd">⬇ 下载 fixpcl.cmd</a>
+    <a class="btn btn-alt" href="https://ghfast.top/https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd">加速源 ①</a>
+    <a class="btn btn-alt" href="https://gh-proxy.com/https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd">加速源 ②</a>
+  </div>
+
+  <a class="gh" href="https://github.com/ImUpXuu/fixpcl">GitHub 仓库 · 原理文档 · 问题反馈 →</a>
+
+  <div class="steps">
+    <div class="step"><span class="n">1</span><h3>下载工具</h3><p>点上面的按钮，拿到 fixpcl.cmd（约 1.6 MB）。</p></div>
+    <div class="step"><span class="n">2</span><h3>放在一起</h3><p>和官方 Plain Craft Launcher 2.exe 放进同一个文件夹。</p></div>
+    <div class="step"><span class="n">3</span><h3>双击修复</h3><p>双击运行，生成 .patched.exe，替换原 exe 即可。</p></div>
+  </div>
+
+  <div class="hash">
+    文件校验 SHA-256（v1.0.0）：
+    <code id="h" title="点击复制">8e1bde27fdacfaff8fca801c1e9b2595b304d480198e85b9982fd1e9312c04fa</code>
+  </div>
+
+  <footer>
+    仅限个人使用，请勿分发补丁后的文件。本工具与 PCL 作者及 Mojang / 微软 / 网易无关；
+    不绕过任何正版验证，下载内容来自 Mojang 官方 CDN —— 请购买正版 Minecraft。
+    详细声明见 <a href="https://github.com/ImUpXuu/fixpcl/blob/main/DISCLAIMER.md">DISCLAIMER</a>。
+  </footer>
+
+</div>
+<script>
+document.getElementById('h').onclick = function () {
+  navigator.clipboard.writeText(this.textContent).then(function () {
+    var c = document.getElementById('h'), t = c.textContent;
+    c.textContent = '已复制到剪贴板 ✓';
+    setTimeout(function () { c.textContent = t; }, 1200);
+  });
+};
+</script>
+</body>
+</html>
