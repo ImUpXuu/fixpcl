@@ -10,19 +10,19 @@ pause
 exit /b %EC%
 #PS_BODY
 # ================================================================
-#  PCL 2.99.0.0 MC 下载功能一键修复（单文件版，双击即用）
+#  PCL 2.99.0.0 / 2.99.0.1 MC 下载功能一键修复（单文件版，双击即用）
 #
-#  用法：把本文件与官方 2.99.0.0 的 "Plain Craft Launcher 2.exe"
+#  用法：把本文件与官方 2.99.0.0 或 2.99.0.1 的 "Plain Craft Launcher 2.exe"
 #        放在同一文件夹，双击本文件。成功后同目录生成
 #        "Plain Craft Launcher 2.patched.exe"（原文件不动）。
-#        若目录里没有 exe，会自动从 GitHub / jsdelivr 下载官方版。
+#        若目录里没有 exe，会自动从 GitHub / jsdelivr 下载仓库内最新版。
 #
 #  可选环境变量：
 #        PCL_EXE=路径     指定官方 exe 的位置
 #        PCL_SMOKE=1      生成后自动启动 12 秒做冒烟测试
 #
-#  限制：仅支持官方 2.99.0.0；仅限个人使用，请勿分发补丁后的文件。
-#        建议在 PCL 设置中关闭自动更新，以免补丁版被官方版覆盖。
+#  限制：仅支持官方 2.99.0.0 / 2.99.0.1；仅限个人使用，请勿分发补丁后的文件。
+#        自更新已被自动禁用，补丁版不会被官方版覆盖。
 # ================================================================
 $ErrorActionPreference = 'Stop'
 $ExePath = $env:PCL_EXE
@@ -30,7 +30,7 @@ function Write-Step($m) { Write-Host ('[*] ' + $m) -ForegroundColor Cyan }
 function Write-Ok($m)   { Write-Host ('[+] ' + $m) -ForegroundColor Green }
 function Write-Warn2($m){ Write-Host ('[!] ' + $m) -ForegroundColor Yellow }
 
-$expectedVer = '2.99.0.0'
+$expectedVers = @('2.99.0.0', '2.99.0.1')
 
 # ---- 0. 定位源 exe ---------------------------------------------------------
 if (-not $ExePath) {
@@ -42,7 +42,7 @@ if (-not $ExePath) {
     if (Test-Path $try) { $ExePath = $try }
 }
 if (-not $ExePath) {
-    Write-Step '未指定 exe，尝试从 GitHub 下载官方 2.99.0.0 ...'
+    Write-Step '未指定 exe，尝试从 GitHub 下载仓库内最新的官方正式版 ...'
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $zip = Join-Path $env:TEMP 'pcl-official-299.zip'
     $urls = @(
@@ -54,7 +54,7 @@ if (-not $ExePath) {
         try { Invoke-WebRequest -Uri $u -OutFile $zip -UseBasicParsing -TimeoutSec 180 | Out-Null; $got = $true; break }
         catch { Write-Warn2 ('下载源不可用: ' + $u) }
     }
-    if (-not $got) { throw '无法自动下载官方 exe。请将官方 2.99.0.0 的 "Plain Craft Launcher 2.exe" 放到本脚本同目录后重试，或用 -ExePath 指定路径。' }
+    if (-not $got) { throw '无法自动下载官方 exe。请将官方 2.99.0.0 或 2.99.0.1 的 "Plain Craft Launcher 2.exe" 放到本脚本同目录后重试，或用 -ExePath 指定路径。' }
     $exDir = Join-Path $env:TEMP 'pcl-official-299'
     if (Test-Path $exDir) { Remove-Item $exDir -Recurse -Force }
     Expand-Archive -Path $zip -DestinationPath $exDir -Force
@@ -68,7 +68,7 @@ if (-not (Test-Path $ExePath)) { throw "找不到 exe: $ExePath" }
 
 # ---- 1. 版本守卫 -----------------------------------------------------------
 $fv = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ExePath).FileVersion
-if ($fv -ne $expectedVer) { throw "版本不匹配：本工具仅支持官方 $expectedVer，检测到 '$fv'。请勿对其他版本使用。" }
+if ($expectedVers -notcontains $fv) { throw "版本不匹配：本工具仅支持官方 $($expectedVers -join ' / ')，检测到 '$fv'。请勿对其他版本使用。" }
 Write-Ok "目标: $ExePath (v$fv)"
 
 # ---- 2. 释放内嵌 dnlib -----------------------------------------------------
@@ -101,7 +101,7 @@ $module = [dnlib.DotNet.ModuleDefMD]::Load($ExePath)
 $importer = New-Object dnlib.DotNet.Importer($module)
 function GetTypeDef($fullName) {
     $t = @($module.Types | Where-Object { $_.FullName -eq $fullName })
-    if ($t.Count -ne 1) { throw "类型定位失败 ($($t.Count)): $fullName —— 文件结构可能不是预期的 2.99.0.0" }
+    if ($t.Count -ne 1) { throw "类型定位失败 ($($t.Count)): $fullName —— 文件结构可能不是预期的 2.99.x" }
     return $t[0]
 }
 function NewI4([int]$v) {

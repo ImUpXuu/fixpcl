@@ -1,8 +1,8 @@
 # fixpcl
 
-> PCL (Plain Craft Launcher 2) v2.99.0.0 MC 下载功能一键修复工具 —— 单文件、双击即用、无需安装任何依赖。
+> PCL (Plain Craft Launcher 2) v2.99.0.0 / 2.99.0.1 MC 下载功能一键修复工具 —— 单文件、双击即用、无需安装任何依赖。
 
-官方 2.99.0.0 为遵守相关法律法规关闭了 MC 下载功能（原版安装、整合包安装等）。
+官方 2.99.x 为遵守相关法律法规关闭了 MC 下载功能（原版安装、整合包安装等）。
 本工具直接对**官方发布的 exe** 做二进制 IL 手术，把被编译期裁剪掉的下载入口按上一无限制版本（2.14.0.0）的源码语义原样接回。
 
 ## 下载
@@ -19,31 +19,35 @@
 | gh-proxy.com | <https://gh-proxy.com/https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd> |
 | 备用（仓库 raw） | <https://github.com/ImUpXuu/fixpcl/raw/main/fixpcl.cmd> |
 
-**文件校验**（v1.0.0；任何镜像下载后请核对，不匹配说明该镜像缓存异常，请换主源）：
+**文件校验**（v1.0.1；任何镜像下载后请核对，不匹配说明该镜像缓存异常，请换主源）：
 
 ```
-SHA-256: 8e1bde27fdacfaff8fca801c1e9b2595b304d480198e85b9982fd1e9312c04fa
-大小:    1,602,042 字节
+SHA-256: ccd11af8900067a0a18930e175d54aaba6b5e7222dc7f2f5feb6267b0e058d7e
+大小:    1,602,143 字节
 ```
 
 PowerShell 一行下载并校验：
 
 ```powershell
 irm https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd -OutFile fixpcl.cmd
-(Get-FileHash fixpcl.cmd -Algorithm SHA256).Hash   # 应为 8E1BDE27FDACFAFF...
+(Get-FileHash fixpcl.cmd -Algorithm SHA256).Hash   # 应为 CCD11AF8900067A0...
 ```
 
-> 无论从哪个镜像获取工具，其修补产物（`.patched.exe`）的 SHA-256 恒为
-> `2f8bd4f49615d4377e3b00d7dd706239b360943853058737a50edf9d101483ae`，可作为最终校验。
+> 修补产物（`.patched.exe`）的 SHA-256 随源 exe 版本而固定，可作为最终校验：
+>
+> | 源 exe | 修补产物 SHA-256 |
+> |---|---|
+> | 官方 2.99.0.0 | `2f8bd4f49615d4377e3b00d7dd706239b360943853058737a50edf9d101483ae` |
+> | 官方 2.99.0.1 | `0a883cb488ad9306b237298537735c7361ddca976012f7f748806908b23015ca` |
 
 ## 快速开始
 
-1. 把官方 2.99.0.0 的 `Plain Craft Launcher 2.exe` 和本工具放在**同一文件夹**；
+1. 把官方 2.99.0.0 或 2.99.0.1 的 `Plain Craft Launcher 2.exe` 和本工具放在**同一文件夹**；
 2. 双击 `fixpcl.cmd`，等待约 10 秒；
 3. 同目录生成 `Plain Craft Launcher 2.patched.exe`（原文件不会被修改）；
 4. 用它替换你 PCL 目录里的 exe（替换前请自行备份）。
 
-文件夹里没有官方 exe？工具会自动从 GitHub / jsdelivr 下载官方 2.99.0.0 再修补。
+文件夹里没有官方 exe？工具会自动从 GitHub / jsdelivr 下载仓库内的最新正式版（当前为 2.99.0.1）再修补。
 
 ## 恢复了什么
 
@@ -65,11 +69,11 @@ irm https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd -OutFi
 ## 环境要求
 
 - Windows 10 / 11（自带 Windows PowerShell 5.1，无需安装任何东西）
-- 官方 2.99.0.0 正式版 exe（其他版本会被版本守卫拒绝）
+- 官方 2.99.0.0 或 2.99.0.1 正式版 exe（其他版本会被版本守卫拒绝）
 
 ## 内置安全机制
 
-- **版本锁**：仅接受 FileVersion = 2.99.0.0，否则拒绝执行；
+- **版本锁**：仅接受 FileVersion = 2.99.0.0 / 2.99.0.1，否则拒绝执行；
 - **只读原文件**：补丁输出为独立的 `*.patched.exe`；
 - **写盘前校验**：全模块扫描悬空引用（分支目标 / 异常处理边界），任何异常立即中止；
 - **写盘后复检**：重新加载产物，逐项验证 P1/P2/P3/P5/P6 全部生效，失败即删；
@@ -84,7 +88,7 @@ irm https://github.com/ImUpXuu/fixpcl/releases/latest/download/fixpcl.cmd -OutFi
 
 ## 局限
 
-- 与 2.99.0.0 二进制结构强绑定。官方发布新版本后本工具会**拒绝执行**（版本守卫与结构定位双重保险），需要重新分析适配；
+- 与 2.99.0.0 / 2.99.0.1 二进制结构强绑定（两个版本的限制结构一致，仅提示文案略有变化）。官方发布新版本后本工具会**拒绝执行**（版本守卫与结构定位双重保险），需要重新分析适配；
 - 自更新已被禁用（P7）：设置中的"检查更新"按钮仍可检测新版本，但点击更新后不会实际下载替换；
 - 遥测与公告等联网行为与官方原版一致，未被改动。
 

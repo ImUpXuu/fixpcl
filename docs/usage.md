@@ -6,7 +6,7 @@
 |----|------|
 | 操作系统 | Windows 10 / 11 |
 | PowerShell | 系统自带 5.1 即可（无需 PowerShell 7，无需安装任何软件） |
-| 目标文件 | PCL 官方 2.99.0.0 正式版 `Plain Craft Launcher 2.exe` |
+| 目标文件 | PCL 官方 2.99.0.0 或 2.99.0.1 正式版 `Plain Craft Launcher 2.exe` |
 
 版本号可以在 exe 属性的"详细信息"里确认，也可以不看——工具会自己校验，版本不符会拒绝执行并提示。
 
@@ -17,7 +17,7 @@
 3. 看到 `===== REPAIR FINISHED =====` 即成功，同目录会多出 `Plain Craft Launcher 2.patched.exe`；
 4. 备份你 PCL 安装目录里的旧 exe，用补丁版替换。
 
-文件夹里没有 exe 时，工具会依次尝试 GitHub raw 和 jsdelivr 两个镜像自动下载官方 2.99.0.0，下载后自动继续。
+文件夹里没有 exe 时，工具会依次尝试 GitHub raw 和 jsdelivr 两个镜像自动下载仓库内的最新正式版（当前为 2.99.0.1），下载后自动继续。
 
 ## 方式二：命令行 / 环境变量
 
@@ -42,7 +42,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\pcl-repair.ps1   # 如已�
 ## 成功时的输出
 
 ```
-[+] 目标: ...\Plain Craft Launcher 2.exe (v2.99.0.0)
+[+] 目标: ...\Plain Craft Launcher 2.exe (v2.99.0.1)
 [+] dnlib 已加载
 [+] Dialogs.SelectFile 引用就绪
 [*] 开始打补丁 ...
@@ -72,7 +72,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\pcl-repair.ps1   # 如已�
 工具的形态（cmd 引导 + 大段 Base64 + 修改 PE 文件）确实容易触发启发式。本机 Windows Defender 实测不拦截。如被拦截可添加信任，或自行审查源码后重建（见 [how-it-works.md](how-it-works.md) 末尾的构建说明）。
 
 **Q: 提示"版本不匹配"？**
-工具仅支持官方 2.99.0.0。你的 exe 是其他版本（或已被修改过）。请获取官方 2.99.0.0 正式版。
+工具仅支持官方 2.99.0.0 与 2.99.0.1。你的 exe 是其他版本（或已被修改过）。请获取这两个版本之一的正式版。
 
 **Q: 自动下载失败？**
 GitHub 与 jsdelivr 都不可达时会提示手动放置 exe。也可以自己从 PCL 官网下载正式版后放入同目录。
@@ -84,4 +84,4 @@ GitHub 与 jsdelivr 都不可达时会提示手动放置 exe。也可以自己�
 确认你运行的是 `*.patched.exe` 而不是原文件；确认网络能访问 Mojang 版本清单（`piston-meta.mojang.com`）。
 
 **Q: 以后 PCL 出新版了能用吗？**
-不能。补丁与 2.99.0.0 的二进制结构强绑定，新版会被版本守卫拒绝。需要等本工具适配新版本。
+目前不行。补丁与 2.99.0.0 / 2.99.0.1 的二进制结构绑定，更新的版本会被版本守卫拒绝。等本工具适配后再用。
